@@ -14,7 +14,7 @@ const aboutVariants = {
 
 const StatCard: React.FC<StatCardProps> = ({ icon, number, label }) => (
     <motion.div variants={aboutVariants} initial="hidden" animate="visible"
-        className="animate-child relative text-center py-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 group overflow-hidden card "
+        className="animate-child relative text-center py-6 rounded-2xl  group overflow-hidden card "
 
     >
         <div className="flex justify-center mb-4" style={{ opacity: 1 }}>
@@ -24,7 +24,7 @@ const StatCard: React.FC<StatCardProps> = ({ icon, number, label }) => (
         </div>
 
         <div
-            className="text-2xl lg:text-3xl font-semibold mb-2 leading-tight"
+            className="text-2xl lg:text-3xl mb-2 leading-tight"
             style={{
                 color: 'rgb(255, 255, 255)',
                 opacity: 1,

@@ -1,17 +1,101 @@
-export interface ServiceInfo {
-  id: string;
-  title: string;
-  description: string;
-  icon?: string;
-  price: string;
-  duration: string;
-  benefits: string[];
-  contraindications: string[];
-  preparation: string;
-  aftercare: string;
-  category: string;
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
+};
+
+const MessageSchema = z.object({
+  role: z.enum(['user', 'assistant']),
+  content: z
+    .string()
+    .min(1, 'Сообщение не может быть пустым')
+    .max(4000, 'Сообщение слишком длинное')
+    .transform((s: string) => s.trim()),
+});
+
+const RequestSchema = z.object({
+  messages: z
+    .array(MessageSchema)
+    .min(1, 'Требуется хотя бы одно сообщение')
+    .max(50, 'Слишком много сообщений в истории'),
+});
+
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW_MS = 60000;
+const RATE_LIMIT_MAX_REQUESTS = 20;
+
+function getRateLimitKey(req: Request): string {
+  const forwarded = req.headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  const userAgent = req.headers.get('user-agent') || 'unknown';
+  const apiKey = req.headers.get('apikey') || 'none';
+  return `${userAgent.slice(0, 50)}_${apiKey.slice(-8)}`;
 }
-const servicesData: ServiceInfo[] = [
+
+function checkRateLimit(key: string): {
+  allowed: boolean;
+  remaining: number;
+  resetIn: number;
+} {
+  const now = Date.now();
+  const entry = rateLimitStore.get(key);
+  if (!entry || now > entry.resetTime) {
+    rateLimitStore.set(key, {
+      count: 1,
+      resetTime: now + RATE_LIMIT_WINDOW_MS,
+    });
+    return {
+      allowed: true,
+      remaining: RATE_LIMIT_MAX_REQUESTS - 1,
+      resetIn: RATE_LIMIT_WINDOW_MS,
+    };
+  }
+  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return { allowed: false, remaining: 0, resetIn: entry.resetTime - now };
+  }
+  entry.count++;
+  return {
+    allowed: true,
+    remaining: RATE_LIMIT_MAX_REQUESTS - entry.count,
+    resetIn: entry.resetTime - now,
+  };
+}
+
+const BLOCKED_PATTERNS = [
+  /<\/script>/i,
+  /javascript:/i,
+  /on\w+=/i,
+  /data:text\/html/i,
+  /eval\s*\$/i,
+  /document\.(cookie|write|location)/i,
+];
+
+function isContentSafe(content: string): boolean {
+  return !BLOCKED_PATTERNS.some((pattern) => pattern.test(content));
+}
+
+function sanitizeContent(content: string): string {
+  return content.replace(/<[^>]*>/g, '').trim();
+}
+
+const clinicInfo = {
+  name: 'Эстерия',
+  specialization: 'Косметологический кабинет',
+  address: 'г. Шлиссельбург, ул. Чекалова, д. 10',
+  phone: '+7 (965) 788-77-50',
+  whatsapp: '+79657887750',
+  telegram: '@esteria_shlisselburg',
+  workingHours: {
+    weekdays: 'Пн-Пт: 10:00 - 20:00',
+    weekend: 'Сб-Вс: 10:00 - 19:00',
+  },
+};
+const servicesData = [
   {
     id: 'facial-cleansing',
     title: 'Чистка лица',
@@ -332,25 +416,7 @@ const servicesData: ServiceInfo[] = [
     aftercare: 'Использовать солнцезащитный крем, избегать солнца 1–2 недели.',
     category: 'Химические пилинги',
   },
-  {
-    id: 'cosmetologist_consultation',
-    title: 'Консультация косметолога',
-    description:
-      'Профессиональная консультация специалиста по уходу за кожей лица и тела, включающая оценку состояния кожи, выявление проблем и подбор индивидуальных рекомендаций по уходу и процедурам. Консультация помогает определить наиболее эффективные методы для улучшения состояния кожи и достижения желаемых результатов.',
-    price: 'бесплатно',
-    duration: '30 мин',
-    benefits: [
-      'Общая оценка состояния кожи',
-      'Получение индивидуальных рекомендаций',
-      'Подбор подходящих процедур и средств ухода',
-    ],
-    contraindications: ['Отсутствуют противопоказания'],
-    preparation:
-      'Перед консультацией рекомендуется подготовить информацию о текущем уходе и возможных проблемах кожи.',
-    aftercare:
-      'Следовать рекомендациям специалиста для достижения наилучших результатов.',
-    category: 'Консультация',
-  },
+
   {
     id: 'combined_cleaning',
     title: 'Комбинированная чистка лица',
@@ -373,43 +439,247 @@ const servicesData: ServiceInfo[] = [
       'Использовать мягкие средства, избегать солнца и механических повреждений кожи.',
     category: 'Чистки и уход',
   },
-];
-
-export const clinicInfo = {
-  name: 'Эстерия',
-  specialization: 'Косметологический кабинет',
-  address: 'г. Шлиссельбург, ул. Чекалова, д. 10',
-  phone: '+7 (965) 788-77-50',
-  whatsapp: '+79657887750',
-  telegram: '@esteria_shlisselburg',
-  workingHours: {
-    weekdays: 'Пн-Пт: 10:00 - 20:00',
-    weekend: 'Сб-Вс: 10:00 - 19:00',
-  },
-  description:
-    'Косметология в Шлиссельбурге Эстерия. Широкий спектр профессиональных процедур, направленных на омоложение и улучшение внешнего вида. Я помогу вам выглядеть и чувствовать себя лучше, используя современные технологии и сертифицированные препараты. ',
-};
-
-export const faqData = [
   {
-    question: 'Как записаться на приём?',
-    answer:
-      'Вы можете записаться по телефону +7 (965) 788-77-50, через WhatsApp, Telegram.',
-  },
-  {
-    question: 'Нужна ли консультация перед процедурой?',
-    answer:
-      'Да, я провожу бесплатную консультацию перед любой процедурой, чтобы подобрать оптимальный план и исключить противопоказания.',
-  },
-  {
-    question: 'Какие формы оплаты вы принимаете?',
-    answer: 'Принимаю наличные, переводы по СБП.',
-  },
-  {
-    question: 'Есть ли у вас акции и скидки?',
-    answer:
-      'Да, я регулярно провожу акции. Следите за нашими социальными сетями в Вконтакте.',
+    id: 'cosmetologist_consultation',
+    title: 'Консультация косметолога',
+    description:
+      'Профессиональная консультация специалиста по уходу за кожей лица и тела, включающая оценку состояния кожи, выявление проблем и подбор индивидуальных рекомендаций по уходу и процедурам. Консультация помогает определить наиболее эффективные методы для улучшения состояния кожи и достижения желаемых результатов.',
+    price: 'бесплатно',
+    duration: '30 мин',
+    benefits: [
+      'Общая оценка состояния кожи',
+      'Получение индивидуальных рекомендаций',
+      'Подбор подходящих процедур и средств ухода',
+    ],
+    contraindications: ['Отсутствуют противопоказания'],
+    preparation:
+      'Перед консультацией рекомендуется подготовить информацию о текущем уходе и возможных проблемах кожи.',
+    aftercare:
+      'Следовать рекомендациям специалиста для достижения наилучших результатов.',
+    category: 'Консультация',
   },
 ];
+const systemPrompt = `Ты — Эстерия, дружелюбный и профессиональный виртуальный помощник косметологического кабинета "${
+  clinicInfo.name
+}".
 
-export default servicesData;
+ТВОЯ ЛИЧНОСТЬ:
+- Женственная, заботливая, профессиональная
+- Обращаешься на "Вы"
+- Используешь эмодзи уместно, но не чрезмерно
+- Отвечаешь тепло и с заботой о клиенте
+
+ИНФОРМАЦИЯ О КАБИНЕТЕ:
+- Название: ${clinicInfo.name}
+- Адрес: ${clinicInfo.address}
+- Телефон: ${clinicInfo.phone}
+- WhatsApp: ${clinicInfo.whatsapp}
+- Telegram: ${clinicInfo.telegram}
+- Часы работы: ${clinicInfo.workingHours.weekdays}, ${
+  clinicInfo.workingHours.weekend
+}
+
+УСЛУГИ КАБИНЕТА:
+${servicesData
+  .map(
+    (s) => `
+• ${s.title} (${s.price}, ${s.duration})
+  Описание: ${s.description}
+  Преимущества: ${s.benefits.join(', ')}
+  Противопоказания: ${s.contraindications.join(', ')}
+  Подготовка: ${s.preparation}
+  После процедуры: ${s.aftercare}
+`
+  )
+  .join('\n')}
+
+ПРАВИЛА ОБРАБОТКИ ДАННЫХ (ОБЯЗАТЕЛЬНО СОБЛЮДАТЬ):
+- Не проси персональные данные (имя, телефон, email). Если пользователь предоставит их, предложи перейти в мессенджер для записи.
+- Не сохраняй или не повторяй ПДн в ответах.
+- Всегда направляй на мессенджеры для записи: "Для записи перейдите в WhatsApp: ${
+  clinicInfo.whatsapp
+} или Telegram: ${clinicInfo.telegram}".
+- Если вопрос о записи, дай контакты и скажи: "Свяжитесь напрямую — там данные будут обработаны безопасно."
+- Сообщения обрабатываются анонимно AI-сервисом, без сохранения.
+
+ТВОИ ОБЯЗАННОСТИ:
+1. Приветствовать клиентов и представляться
+2. Отвечать на вопросы об услугах, ценах, процедурах (без медицинских диагнозов)
+3. Объяснять противопоказания и рекомендации
+4. Помогать с записью — направлять на мессенджеры
+5. Рассказывать о местоположении и часах работы
+6. При неясных вопросах — уточнять или предложить связаться
+
+ДОПОЛНИТЕЛЬНЫЕ ПРАВИЛА:
+- Если не знаешь точный ответ — предложи связаться с администратором
+- Не давай медицинских диагнозов
+- Всегда предлагай записаться или задать ещё вопросы
+- Если спрашивают о чём-то вне косметологии — вежливо объясни, что ты специализируешься на услугах косметологического кабинета
+- Отвечай кратко, но информативно (2-4 предложения обычно достаточно)
+- Напоминай о согласии: "Продолжая чат, вы соглашаетесь с обработкой сообщений для ответа."
+
+НАВИГАЦИЯ ПО САЙТУ:
+- Услуги: раздел "Услуги" на главной странице
+- Контакты и запись: раздел "Контакты" внизу страницы
+- Отзывы: раздел "Отзывы"
+- О кабинете: раздел "Обо мне"`;
+
+serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const rateLimitKey = getRateLimitKey(req);
+    const rateLimit = checkRateLimit(rateLimitKey);
+
+    if (!rateLimit.allowed) {
+      console.log(
+        `Лимит запросов превышен для: ${rateLimitKey.slice(0, 20)}...`
+      );
+      return new Response(
+        JSON.stringify({
+          error: 'Слишком много запросов. Пожалуйста, подождите немного.',
+        }),
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+            'Retry-After': String(Math.ceil(rateLimit.resetIn / 1000)),
+          },
+        }
+      );
+    }
+
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Неверный формат запроса' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    const validationResult = RequestSchema.safeParse(body);
+    if (!validationResult.success) {
+      console.log('Валидация не удалась:', validationResult.error.issues);
+      return new Response(
+        JSON.stringify({ error: 'Неверный формат сообщений' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    const { messages } = validationResult.data;
+
+    for (const msg of messages) {
+      if (!isContentSafe(msg.content)) {
+        console.log('Обнаружено потенциально вредоносное содержимое');
+        return new Response(
+          JSON.stringify({ error: 'Недопустимое содержимое сообщения' }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+    }
+
+    const sanitizedMessages = messages.map(
+      (msg: { role: string; content: string }) => ({
+        role: msg.role,
+        content: sanitizeContent(msg.content),
+      })
+    );
+
+    const API_KEY = Deno.env.get('API_KEY');
+    if (!API_KEY) {
+      console.error('Ключ API не настроен');
+      return new Response(
+        JSON.stringify({ error: 'Сервис временно недоступен' }),
+        {
+          status: 503,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    console.log(
+      `Обработка запроса с ${sanitizedMessages.length} сообщениями (осталось лимита: ${rateLimit.remaining})`
+    );
+
+    const response = await fetch(
+      'https://ai.gateway.lovable.dev/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            ...sanitizedMessages,
+          ],
+          stream: true,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      console.error('Ошибка AI сервиса:', response.status);
+
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({
+            error: 'Слишком много запросов. Пожалуйста, подождите немного.',
+          }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'Сервис временно недоступен.' }),
+          {
+            status: 402,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+
+      return new Response(JSON.stringify({ error: 'Ошибка AI сервиса' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Потоковый ответ от AI');
+
+    return new Response(response.body, {
+      headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' },
+    });
+  } catch (error) {
+    console.error(
+      'Ошибка чат-ассистента:',
+      error instanceof Error ? error.message : 'Неизвестная ошибка'
+    );
+    return new Response(
+      JSON.stringify({ error: 'Произошла ошибка. Попробуйте позже.' }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+});

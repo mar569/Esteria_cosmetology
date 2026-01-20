@@ -5,7 +5,6 @@ import AboutMe from '../components/aboutSection/AboutMe';
 import Services from '../components/serviceCard/Services';
 import Gallery from '../components/gallery/Gallery';
 import Reviews from '../components/reviews/Reviews';
-import Appointment from '../components/appointment/Appointment';
 import Blog from '../components/Blog';
 import Contact from '../components/Contact';
 import Footer from '../components/Footer';
@@ -13,16 +12,15 @@ import Footer from '../components/Footer';
 import { useService } from '../components/context/ServiceContext';
 import WhyMeAndQuestions from '../components/whyMe/WhyMeAndQuestions';
 import { useScrollToSection } from '../hooks/useScrollToSection';
-import ChatBot from '../components/Chat/ChatBot';
+
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import AIAssistant from '../components/Chat/AIAsisstant';
-
+import ChatBot from '../components/Chat/ChatBot';
 
 const HomePage: React.FC = () => {
 
     const {
         registerRef,
-        scrollToSection,
     } = useScrollToSection();
 
     const heroRef = useRef<HTMLElement>(null);
@@ -31,7 +29,6 @@ const HomePage: React.FC = () => {
     const reviewsRef = useRef<HTMLElement>(null);
     const servicesRef = useRef<HTMLElement>(null);
     const whymeRef = useRef<HTMLElement>(null);
-    const appointmentRef = useRef<HTMLElement>(null);
     const blogRef = useRef<HTMLElement>(null);
     const contactRef = useRef<HTMLElement>(null);
     const { setSelectedService } = useService();
@@ -50,7 +47,7 @@ const HomePage: React.FC = () => {
         registerRef('#reviews', reviewsRef);
         registerRef('#services', servicesRef);
         registerRef('#whyme', whymeRef);
-        registerRef('#appointment', appointmentRef);
+
         registerRef('#blog', blogRef);
         registerRef('#contact', contactRef);
     }, [registerRef]);
@@ -58,7 +55,6 @@ const HomePage: React.FC = () => {
     const openAppointmentWithService = (service: string) => {
         setSelectedService(service);
 
-        scrollToSection('#appointment');
     };
 
     const handleConsultationClick = () => {
@@ -75,7 +71,6 @@ const HomePage: React.FC = () => {
                 <AIAssistant />
             </section>
 
-
             <section ref={aboutRef} id="about" style={{ position: 'relative' }}>
                 <AboutMe stats={stats} onConsultationClick={handleConsultationClick} />
             </section>
@@ -83,7 +78,6 @@ const HomePage: React.FC = () => {
             <section ref={galleryRef} id="gallery" style={{ position: 'relative' }}>
                 <Gallery />
             </section>
-
 
             <Services ref={servicesRef} onSelectService={openAppointmentWithService} />
 
@@ -93,10 +87,6 @@ const HomePage: React.FC = () => {
 
             <section ref={reviewsRef} id="reviews" style={{ position: 'relative' }}>
                 <Reviews />
-            </section>
-
-            <section ref={appointmentRef} id="appointment" style={{ position: 'relative' }}>
-                <Appointment />
             </section>
 
             <section ref={blogRef} id="blog" style={{ position: 'relative' }}>

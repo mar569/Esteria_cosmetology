@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 
 
 import { usePreventScroll } from '../hooks/usePreventScroll';
-
+// Убрал useActiveSection, так как activeSection не используется
 import Logo from './header/Logo';
 import DesktopNav from './header/DesktopNav';
 import PhoneLink from './header/PhoneLink';
@@ -15,7 +15,7 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-
+  // Убрал activeSection, так как он не используется
 
   const scrollToSection = useCallback((id: string) => {
     const element = document.getElementById(id);

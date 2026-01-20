@@ -7,7 +7,6 @@
 
 @layer base {
   :root {
-    /* Natural Botanical Color Palette */
     --background: 160 30% 6%;
     --foreground: 60 30% 96%;
 
@@ -17,24 +16,19 @@
     --popover: 160 35% 8%;
     --popover-foreground: 60 30% 96%;
 
-    /* Primary - Deep Emerald Green */
     --primary: 158 60% 32%;
     --primary-foreground: 60 30% 96%;
     --primary-glow: 158 60% 45%;
 
-    /* Secondary - Sage Green */
     --secondary: 155 25% 22%;
     --secondary-foreground: 60 30% 96%;
 
-    /* Muted - Dark Forest */
     --muted: 160 30% 15%;
     --muted-foreground: 155 20% 60%;
 
-    /* Accent - Gold */
     --accent: 42 80% 55%;
     --accent-foreground: 160 30% 6%;
 
-    /* Tertiary - Warm Earth */
     --tertiary: 30 35% 45%;
     --tertiary-foreground: 60 30% 96%;
 
@@ -47,7 +41,6 @@
 
     --radius: 0.75rem;
 
-    /* Custom Gradients */
     --gradient-hero: linear-gradient(
       180deg,
       hsl(160 30% 6%) 0%,
@@ -70,18 +63,15 @@
       hsl(160 40% 15%) 100%
     );
 
-    /* Shadows */
     --shadow-sm: 0 2px 8px -2px hsl(160 30% 3% / 0.5);
     --shadow-md: 0 8px 24px -4px hsl(160 30% 3% / 0.6);
     --shadow-lg: 0 16px 48px -8px hsl(160 30% 3% / 0.7);
     --shadow-glow: 0 0 40px hsl(158 60% 32% / 0.3);
     --shadow-gold: 0 4px 20px hsl(42 80% 55% / 0.25);
 
-    /* Typography */
     --font-display: 'Cormorant Garamond', serif;
     --font-body: 'Montserrat', sans-serif;
 
-    /* Sidebar (keeping defaults) */
     --sidebar-background: 160 30% 6%;
     --sidebar-foreground: 60 30% 96%;
     --sidebar-primary: 158 60% 32%;
@@ -93,7 +83,6 @@
   }
 
   .dark {
-    /* Dark mode is the default for this design */
     --background: 160 30% 6%;
     --foreground: 60 30% 96%;
 
@@ -329,7 +318,6 @@ body {
 }
 body {
   text-rendering: optimizeSpeed;
-  font-smoothing: antialiased; /* Это для WebKit-браузеров */
 }
 body::-webkit-scrollbar {
   display: none;

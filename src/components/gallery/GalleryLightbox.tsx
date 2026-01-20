@@ -23,8 +23,9 @@ const GalleryLightbox = ({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         key="lightbox"
-        onClick={closeLightbox}
+        onClick={closeLightbox} // Закрытие при клике вне карточки
     >
+        {/* Внутренний контейнер, клики внутри которого не закрывают модал */}
         <div
             className="relative max-w-6xl max-h-full"
             onClick={(e) => e.stopPropagation()}

@@ -19,7 +19,7 @@ const ArticlePage: React.FC = () => {
 
     const seoTitle = `${article.title} - Esteria`;
     const seoDescription = article.excerpt;
-    const seoUrl = `https://esteriacosmo.ru/blog/${id}`;
+    const seoUrl = `https://esteria-cosmo.ru/blog/${id}`;
 
     return (
         <>

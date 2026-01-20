@@ -1,10 +1,10 @@
+import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Phone, Mail, MapPin } from 'lucide-react';
 import { FaTelegram, FaVk, FaWhatsapp } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import { smoothScrollTo } from '../utils/smoothScroll';
-
-import { forwardRef } from 'react';
 import { socialLinks } from '../utils/socialLinks';
 
 const servicesLinks = [
@@ -18,7 +18,7 @@ const servicesLinks = [
 
 const navigationLinks = [
   { href: '#about', label: 'Обо мне' },
-  { href: '#appointment', label: 'Запись на прием' },
+  { href: '#services', label: 'Услуги' },
   { href: '#reviews', label: 'Отзывы' },
   { href: '#blog', label: 'Блог' },
   { href: '#contact', label: 'Контакты' },
@@ -168,7 +168,7 @@ const Footer = forwardRef<HTMLElement>((_, ref) => {
               >
                 <MapPin className="h-5 w-5 text-emerald-500 mt-1 group-hover:text-emerald-300 transition-colors" />
                 <span className="group-hover:text-white transition-colors">
-                  Чекалова, д. 10<br />Шлиссельбург
+                  Чекалова, д. 10, Шлиссельбург
                 </span>
               </motion.div>
               <motion.div
@@ -203,13 +203,24 @@ const Footer = forwardRef<HTMLElement>((_, ref) => {
 
         <div className="border-t border-gray-800 mt-12 pt-8">
           <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
-            <div className="text-gray-400 text-sm">
-              © 2025 Эстерия. Все права защищены.
+
+            <div className="text-gray-400 text-sm text-center lg:text-left">
+              © 2025-{new Date().getFullYear()} Эстерия. Все права защищены.
             </div>
-            <div className="flex items-center space-x-2 text-gray-400 text-sm">
-              <span>Сделано с</span>
-              <Heart className="text-red-500" size={16} />
-              <span>в Шлиссельбурге</span>
+
+
+            <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 text-gray-400 text-sm">
+              <Link
+                to="/privacy-policy"
+                className="underline hover:text-emerald-300 transition-colors text-center sm:text-left"
+              >
+                Политика конфиденциальности
+              </Link>
+              <div className="flex items-center space-x-2 justify-center sm:justify-start">
+                <span>Сделано с</span>
+                <Heart className="text-red-500" size={16} />
+                <span>в Шлиссельбурге</span>
+              </div>
             </div>
           </div>
         </div>

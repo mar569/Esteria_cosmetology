@@ -1,4 +1,6 @@
 
+"use client";
+
 import React, { useRef } from "react";
 import { Star } from "lucide-react";
 import { motion, useInView } from "framer-motion";

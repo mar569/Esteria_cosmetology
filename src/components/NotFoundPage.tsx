@@ -19,7 +19,7 @@ const NotFoundPage: React.FC = () => {
     element.setAttribute('content', 'noindex, nofollow');
 
     return () => {
-      element?.setAttribute('content', prevContent);
+      element && element.setAttribute('content', prevContent);
     };
   }, []);
 
@@ -27,7 +27,7 @@ const NotFoundPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-black via-[#050b09] to-[#0b1a15] text-white flex items-center justify-center px-4">
       <div className="max-w-3xl w-full bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-3xl px-6 py-10 md:px-10 md:py-12 shadow-2xl backdrop-blur-md">
         <div className="flex flex-col md:flex-row items-center gap-10">
-
+          {/* Левая часть — крупный код ошибки и текст */}
           <div className="flex-1 text-center md:text-left space-y-5">
             <p className="text-sm uppercase tracking-[0.3em] text-emerald-400/80">
               Ошибка 404

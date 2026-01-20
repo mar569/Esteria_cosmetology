@@ -8,13 +8,11 @@ import { ServiceProvider } from './components/context/ServiceContext';
 import ErrorBoundary from './ErrorBoundary';
 import { articles } from './utils/articlesData';
 
-
-
-
 const HomePage = lazy(() => import('./pages/HomePage'));
 const AllReviewsPage = lazy(() => import('./pages/AllReviewsPage'));
 const Blog = lazy(() => import('./components/Blog'));
 const ArticlePage = lazy(() => import('./pages/ArticlePage'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 
 function App() {
   const location = useLocation();
@@ -39,6 +37,11 @@ function App() {
       description:
         'Статьи и советы по косметологии, уходу за кожей и процедурам в Эстерия.',
       url: `${baseUrl}/blog`,
+    },
+    '/privacy-policy': {
+      title: 'Политика конфиденциальности - Эстерия',
+      description: 'Политика конфиденциальности сайта Эстерия. Информация об обработке персональных данных.',
+      url: `${baseUrl}/privacy-policy`,
     },
   } as const;
 
@@ -97,6 +100,7 @@ function App() {
                 <Route path="/reviews" element={<AllReviewsPage />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:id" element={<ArticlePage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
 

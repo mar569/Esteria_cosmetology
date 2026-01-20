@@ -1,7 +1,6 @@
 import React from 'react';
-import { Service } from '../../utils/servicesData';
+import { ServiceInfo as Service } from '../../utils/servicesData';
 import { CountGroup } from '../lightswind/countGroup';
-
 
 type ServiceCardProps = {
     service: Service;
@@ -84,7 +83,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onClick }) => {
                     }}
                     className="text-white px-7 py-2 rounded-full font-semibold hover:bg-mint-600 transition"
                 >
-                    Выбрать
+                    Связаться в мессенджере
                 </button>
             </div>
         </div>

@@ -17,7 +17,7 @@ const AllReviewsPage = () => {
             <SEOHead
                 title="Все отзывы - Esteria"
                 description="Полный список отзывов клиентов Esteria."
-                url="https://esteriacosmo.ru/reviews"
+                url="https://esteria-cosmo.ru/reviews"
             />
             <section className="py-12 min-h-screen ">
                 <motion.div

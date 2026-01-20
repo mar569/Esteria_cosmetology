@@ -8,6 +8,7 @@ interface SEOHeadProps {
 
 const SEOHead: React.FC<SEOHeadProps> = ({ title, description, url }) => {
   useEffect(() => {
+    // Заголовок страницы
     document.title = title;
 
     const setMetaTag = (name: string, content: string, property?: string) => {
@@ -50,6 +51,8 @@ const SEOHead: React.FC<SEOHeadProps> = ({ title, description, url }) => {
       'keywords',
       'косметология, косметология в Шлиссельбурге, косметолог, биоревитализация, аугментация губ, чистка лица, массаж лица, липолитики, ботулинотерапия, коллаген, Шлиссельбург, косметолог в Шлиссельбурге, косметолог в Кировске'
     );
+
+    // Open Graph
     setMetaTag('og:title', title, 'og:title');
     setMetaTag('og:description', description, 'og:description');
     setMetaTag('og:type', 'website', 'og:type');
@@ -60,6 +63,7 @@ const SEOHead: React.FC<SEOHeadProps> = ({ title, description, url }) => {
     setMetaTag('og:image:height', '630', 'og:image:height');
     setMetaTag('og:url', url, 'og:url');
 
+    // canonical для текущего адреса
     setLinkTag('canonical', url);
   }, [title, description, url]);
 
